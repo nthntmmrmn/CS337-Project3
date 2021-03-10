@@ -41,6 +41,8 @@ def parse_input(ip):
         # print(f'Num step: {num_steps}')
         ip = input('[1] Go over ingredients list or [2] Go over recipe steps.\n\n> ')
         return ip
+    elif type(ip) is not tuple and ip.lower() == 'exit':
+        return 'exit'
     elif not recipe:
         ip = input('\n\nPlease enter a recipe URL first.\n\n> ')
         return ip
@@ -102,8 +104,6 @@ def parse_input(ip):
     elif ip == 'step out of range':
         ip = input('\n\nThat step doesn\'t exist. Try something else.\n\n> ')
         return ip
-    elif ip.lower() == 'exit':
-        return 'exit'
     else:
         ip = input('\n\nI don\' understand. Try something else.\n\n> ')
         return ip
@@ -149,6 +149,7 @@ def specific_how_to(ip):
 
 
 if __name__ == '__main__':
+    run()
     # tokens = nltk.pos_tag(nltk.word_tokenize('How do I do that?'))
     # print(tokens)
     # t = [i for i,x in enumerate(tokens) if x[1] in ['VB','VBP']]
@@ -179,7 +180,6 @@ if __name__ == '__main__':
     # for t in tokens:
     #     print(stemmer.stem(t[0]))
     # if t in METHODS or stemmer.stem(t) in METHODS:
-    print(nltk.pos_tag(nltk.word_tokenize('how do i cook eggs')))
-    print(nltk.pos_tag(nltk.word_tokenize('how do i preheat an oven')))
-    run()
+    # print(nltk.pos_tag(nltk.word_tokenize('how do i cook eggs')))
+    # print(nltk.pos_tag(nltk.word_tokenize('how do i preheat an oven')))
     # VB, VBP, NN, NNS
