@@ -18,14 +18,16 @@ curr_step = 0
 curr_step_hows = None
 num_steps = 0
 with open('methods.json') as f:
-  METHODS = json.load(f)["METHODS"]
+    METHODS = json.load(f)["METHODS"]
+
 
 def run():
     ip = input('Hi, I\'m RecipeBot9000! Please provide the URL to the recipe you want some help with! Type \'exit\' to quit.\n\n> ')
     while True:
         ip = parse_input(ip)
         # print(f'ip: {ip}')
-        if ip == 'exit': break
+        if ip == 'exit':
+            break
 
 
 def parse_input(ip):
@@ -34,12 +36,17 @@ def parse_input(ip):
     global curr_step
     global num_steps
     global curr_step_hows
+
+    worded_steps = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4,
+                    'fifth': 5, 'sixth': 6, 'seventh': 7, 'eight': 8, 'ninth': 9, 'tenth': 10}
+
     if 'www.allrecipes.com/recipe/' in ip:
         recipe = get_recipe(ip)
         print(f'\n\n{recipe["name"]}? Sounds tasty! What do you want to do?')
         num_steps = len(recipe['directions'])
         # print(f'Num step: {num_steps}')
-        ip = input('[1] Go over ingredients list or [2] Go over recipe steps.\n\n> ')
+        ip = input(
+            '[1] Go over ingredients list or [2] Go over recipe steps.\n\n> ')
         return ip
     elif type(ip) is not tuple and ip.lower() == 'exit':
         return 'exit'
@@ -58,37 +65,52 @@ def parse_input(ip):
         return ('answer_how_to_vague', ip)
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] != 0:
         ans = curr_step_hows[int(ip[1])]
-        print(f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ans)}\n\n')
+        print(
+            f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ans)}\n\n')
         ip = input('> ')
         return ip
     elif type(ip) is tuple and ip[0] == 'answer_how_to_specific':
-        print(f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ip[1])}\n\n')
+        print(
+            f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ip[1])}\n\n')
         ip = input('> ')
         return ip
     elif re.search(r'(?i)\bhow\b', ip.lower()):
         # print(f'asked how: {ip}')
         op = parse_how_to(ip)
         return op
-    elif ip == '1' or any(i in ip.lower() for i in ['ingredients','ingredient']):
+    elif ip == '1' or any(i in ip.lower() for i in ['ingredients', 'ingredient']):
         print(f'\n\nHere is the ingredients list for {recipe["name"]}:')
-        for ing in recipe['ingredients']: print(f'\t- {ing}')
+        for ing in recipe['ingredients']:
+            print(f'\t- {ing}')
         ip = input('\n\n> ')
         return ip
-    elif ip == '2' or any(i in ip.lower() for i in ['direction','directions']):
+    elif ip == '2' or any(i in ip.lower() for i in ['direction', 'directions']):
         if curr_step < num_steps:
             # curr_step += 1
-            print(f'\n\nStep {curr_step+1} is: {recipe["directions"][curr_step]}\n\n')
+            print(
+                f'\n\nStep {curr_step+1} is: {recipe["directions"][curr_step]}\n\n')
             ip = input('> ')
             return ip
         else:
             return 'step out of range'
-    elif any(num(x) for x in re.sub(r'(?i)st|rd|th|nd','',ip).split()) and 'step' in ip.lower():
-        cs = int(num(next(x for x in re.sub(r'(?i)st|rd|th','',ip).split() if num(x))))
+    elif any(num(x) for x in re.sub(r'(?i)st|rd|th|nd', '', ip).split()) and 'step' in ip.lower():
+        cs = int(
+            num(next(x for x in re.sub(r'(?i)st|rd|th', '', ip).split() if num(x))))
         if cs > 0 and cs <= num_steps:
             curr_step = cs - 1
             # print(f'curr_step: {curr_step}')
             return '2'
-        else: return 'step out of range'
+        else:
+            return 'step out of range'
+    elif (any(x for x in worded_steps.keys() if x in ip)) and 'step' in ip.lower():
+        cs = worded_steps[[x for x in worded_steps.keys() if x in ip][0]]
+        if cs > 0 and cs <= num_steps:
+            curr_step = cs - 1
+            # print(f'curr_step: {curr_step}')
+            return '2'
+        else:
+            return 'step out of range'
+
     elif 'next' in ip.lower() and 'step' in ip.lower():
         if curr_step < num_steps - 1:
             curr_step += 1
@@ -111,28 +133,30 @@ def parse_input(ip):
 
 def parse_how_to(ip):
     # print(f'PARSE ip: {ip}')
-    # vague if: 
+    # vague if:
     #   - no VB/VBP (eg, How?)
     #   - all VB/VBPs are 'do' (eg, How do I do that?)
     tokens = nltk.pos_tag(nltk.word_tokenize(ip.lower()))
-    t = [i for i,x in enumerate(tokens) if x[1] in ['VB','VBP']]
-    if not t or all(tokens[i][0] in ['do','i'] for i in t): 
+    t = [i for i, x in enumerate(tokens) if x[1] in ['VB', 'VBP']]
+    if not t or all(tokens[i][0] in ['do', 'i'] for i in t):
         # print(f'VAGUE')
         return vague_how_to(ip)
     else:
         # print('SPECIFIC')
         return specific_how_to(ip)
 
+
 def vague_how_to(ip):
     global METHODS
     global curr_step_hows
     # super hacky lol
-    imperatives = [x+'.' for x in re.split(r'[.;]', recipe['directions'][curr_step].lower())]  
-    possible =  [sub[0].strip(', ') for sub in 
-                    [[x[x.find(t):x.find(next((x for x in x[x.find(t)+len(t):].split() if x in METHODS), '###'))] 
-                        for t in x.split()
-                        if t in METHODS] 
-                        for x in imperatives] 
+    imperatives = [
+        x+'.' for x in re.split(r'[.;]', recipe['directions'][curr_step].lower())]
+    possible = [sub[0].strip(', ') for sub in
+                [[x[x.find(t):x.find(next((x for x in x[x.find(t)+len(t):].split() if x in METHODS), '###'))]
+                  for t in x.split()
+                  if t in METHODS]
+                 for x in imperatives]
                 if sub]
     curr_step_hows = dict(zip(list(range(1, len(possible)+1)), possible))
     return 'answer_how_to_vague', 0
@@ -143,9 +167,8 @@ def specific_how_to(ip):
     pos = ['VB', 'VBP', 'NN', 'NNS']
     tokens = nltk.pos_tag(nltk.word_tokenize(ip.lower()[ip.find('do')+4:]))
     # print(tokens)
-    stop = next(i for i,x in enumerate(tokens) if x[1] in pos)
+    stop = next(i for i, x in enumerate(tokens) if x[1] in pos)
     return 'answer_how_to_specific', re.sub(r'\s+([,:;-])', r'\1', ' '.join(t[0] for t in tokens[stop:]))
-       
 
 
 if __name__ == '__main__':
