@@ -129,7 +129,7 @@ def parse_input(ip):
         ip = input('\n\nThat step doesn\'t exist. Try something else.\n\n> ')
         return ip
     else:
-        ip = input('\n\nI don\' understand. Try something else.\n\n> ')
+        ip = input('\n\nI don\'t understand. Try something else.\n\n> ')
         return ip
 
 
