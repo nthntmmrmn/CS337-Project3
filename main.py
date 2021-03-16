@@ -38,6 +38,8 @@ def parse_input(ip):
         recipe = get_recipe(ip)
         print(f'\n\n{recipe["name"]}? Sounds tasty! What do you want to do?')
         num_steps = len(recipe['directions'])
+        curr_step = 0
+        curr_step_hows = None
         # print(f'Num step: {num_steps}')
         ip = input('[1] Go over ingredients list or [2] Go over recipe steps.\n\n> ')
         return ip
@@ -47,7 +49,7 @@ def parse_input(ip):
         ip = input('\n\nPlease enter a recipe URL first.\n\n> ')
         return ip
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] not in list(str(curr_step_hows.keys()))+[0]:
-        print('me!!')
+        # print('me!!')
         return ip[1]
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] == 0:
         s = ''
@@ -134,7 +136,7 @@ def vague_how_to(ip):
                         if t in METHODS] 
                         for x in imperatives] 
                 if sub]
-    curr_step_hows = dict(zip(list(range(1, len(possible)+1)), possible))
+    curr_step_hows = dict(zip(list(range(1, len(possible)+1)), [x.strip(' and') for x in possible]))
     return 'answer_how_to_vague', 0
 
 
