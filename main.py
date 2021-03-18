@@ -159,7 +159,7 @@ def vague_how_to(ip):
     global curr_step_hows
     # super hacky lol
     imperatives = [
-        x+'.' for x in re.split('[.;]|(?='+')|(?='.join(METHODS)+')', recipe['directions'][curr_step].lower())]
+        x+'. ' for x in re.split('[.;]|(?='+')|(?='.join(METHODS)+')', recipe['directions'][curr_step].lower())]
     print(f'imperatives: {imperatives}')
     possible = [sub[0].strip(',') for sub in
                 [[x[x.find(t):x.find(next((x for x in x[x.find(t)+len(t):].split() if x in METHODS), '###'))]
@@ -167,7 +167,7 @@ def vague_how_to(ip):
                   if t in METHODS]
                  for x in imperatives]
                 if sub]
-    curr_step_hows = dict(zip(list(range(1, len(possible)+1)), [x.strip(' and') for x in possible]))
+    curr_step_hows = dict(zip(list(range(1, len(possible)+1)), [x.strip(' and.') for x in possible]))
     return 'answer_how_to_vague', 0
 
 
