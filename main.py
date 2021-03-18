@@ -142,12 +142,10 @@ def parse_how_to(ip):
 def vague_how_to(ip):
     global METHODS
     global curr_step_hows
-    # super hacky lol
     imperatives = [
         x+'. ' for x in re.split('[.;]|(?='+')|(?='.join(METHODS)+')', recipe['directions'][curr_step].lower())]
-    print(f'imperatives: {imperatives}')
     possible = [sub[0].strip(',') for sub in
-                [[x[x.find(t):x.find(next((x for x in x[x.find(t)+len(t):].split() if x in METHODS), '###'))]
+                [[x[x.find(t):]
                   for t in x.split()
                   if t in METHODS]
                  for x in imperatives]
