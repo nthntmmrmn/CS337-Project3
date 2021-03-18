@@ -10,7 +10,7 @@ Requirements:
 2. Navigation utterances ("Go back one step", "Go to the next step", "Take me to the 1st step", "Take me to the n-th step");
 3. Vague "how to" questions ("How do I do that?", in which case you can infer a context based on what's parsed for the current step);
 4. Specific "how to" questions ("How do I <specific technique>?");
-.5 Name your bot :)
+5. Name your bot :)
 '''
 
 recipe = None
@@ -25,13 +25,11 @@ def run():
     ip = input('Hi, I\'m RecipeBot9000! Please provide the URL to the recipe you want some help with! Type \'exit\' to quit.\n\n> ')
     while True:
         ip = parse_input(ip)
-        # print(f'ip: {ip}')
         if ip == 'exit':
             break
 
 
 def parse_input(ip):
-    # print(f'parse_input ip: {ip}')
     global recipe
     global curr_step
     global num_steps
@@ -46,7 +44,6 @@ def parse_input(ip):
         num_steps = len(recipe['directions'])
         curr_step = 0
         curr_step_hows = None
-        # print(f'Num step: {num_steps}')
         ip = input(
             '[1] Go over ingredients list or [2] Go over recipe steps.\n\n> ')
         return ip
@@ -56,11 +53,9 @@ def parse_input(ip):
         ip = input('\n\nPlease enter a recipe URL first.\n\n> ')
         return ip
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] not in list(str(curr_step_hows.keys()))+[0]:
-        # print('me!!')
         return ip[1]
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] == 0:
         s = ''
-        # print(f'curr_step_hows: {curr_step_hows}')
         for key, val in curr_step_hows.items():
             s += f'[{key}]: {val} '
         if len(list(curr_step_hows.keys())) == 1:
@@ -83,7 +78,6 @@ def parse_input(ip):
         ip = input('> ')
         return ip
     elif re.search(r'(?i)\bhow\b', ip.lower()):
-        # print(f'asked how: {ip}')
         op = parse_how_to(ip)
         return op
     elif ip == '1' or any(i in ip.lower() for i in ['ingredients', 'ingredient']):
@@ -94,7 +88,6 @@ def parse_input(ip):
         return ip
     elif ip == '2' or any(i in ip.lower() for i in ['direction', 'directions']):
         if curr_step < num_steps:
-            # curr_step += 1
             print(
                 f'\n\nStep {curr_step+1} is: {recipe["directions"][curr_step]}\n\n')
             ip = input('> ')
@@ -106,7 +99,6 @@ def parse_input(ip):
             num(next(x for x in re.sub(r'(?i)st|rd|th|nd', '', ip).split() if num(x))))
         if cs > 0 and cs <= num_steps:
             curr_step = cs - 1
-            # print(f'curr_step: {curr_step}')
             return '2'
         else:
             return 'step out of range'
@@ -114,7 +106,6 @@ def parse_input(ip):
         cs = worded_steps[[x for x in worded_steps.keys() if x in ip][0]]
         if cs > 0 and cs <= num_steps:
             curr_step = cs - 1
-            # print(f'curr_step: {curr_step}')
             return '2'
         else:
             return 'step out of range'
@@ -140,17 +131,11 @@ def parse_input(ip):
 
 
 def parse_how_to(ip):
-    # print(f'PARSE ip: {ip}')
-    # vague if:
-    #   - no VB/VBP (eg, How?)
-    #   - all VB/VBPs are 'do' (eg, How do I do that?)
     tokens = nltk.pos_tag(nltk.word_tokenize(ip.lower()))
     t = [i for i, x in enumerate(tokens) if x[1] in ['VB', 'VBP']]
     if not t or all(tokens[i][0] in ['do', 'i'] for i in t):
-        # print(f'VAGUE')
         return vague_how_to(ip)
     else:
-        # print('SPECIFIC')
         return specific_how_to(ip)
 
 
@@ -172,46 +157,11 @@ def vague_how_to(ip):
 
 
 def specific_how_to(ip):
-    # print(f'SPECIFIC ip: {ip}')
     pos = ['VB', 'VBP', 'NN', 'NNS']
     tokens = nltk.pos_tag(nltk.word_tokenize(ip.lower()[ip.find('do')+4:]))
-    # print(tokens)
     stop = next(i for i, x in enumerate(tokens) if x[1] in pos)
     return 'answer_how_to_specific', re.sub(r'\s+([,:;-])', r'\1', ' '.join(t[0] for t in tokens[stop:]))
 
 
 if __name__ == '__main__':
     run()
-    # tokens = nltk.pos_tag(nltk.word_tokenize('How do I do that?'))
-    # print(tokens)
-    # t = [i for i,x in enumerate(tokens) if x[1] in ['VB','VBP']]
-    # print(t)
-    # if all(tokens[i][0] == 'do' for i in t): print('all "do"!')
-    # # print([w[1] for w in tokens])
-    # # vb = np.argwhere(np.array([w[1] for w in tokens]) == 'VB') #= [w[1] for w in tokens][::-1].index('VBP') or [w[1] for w in tokens][::-1].index('VB')
-    # # except: vb = 0; print('except')
-    # # print(tokens[tokens[1] == 'VB'])
-    # # print(vb)
-    # # print(tokens)
-    # tokens = nltk.pos_tag(nltk.word_tokenize('How do do the baking?'))
-    # print(tokens)
-    # stemmer = nltk.stem.porter.PorterStemmer()
-    # print([stemmer.stem(s) for s in [w[0] for w in tokens]])
-
-    # s = 'Pour chicken stock into a large pot, and add ham hocks onion, garlic, red pepper flakes, vinegar, black pepper, and enough water to cover ham hocks. Bring to a boil; reduce heat, and simmer for 1 to 2 hours to create the broth.'
-    # specific_how_to(s)
-
-    # recipe = get_recipe('https://www.allrecipes.com/recipe/278180/greek-yogurt-blueberry-lemon-pancakes/')
-    # for s in recipe['directions']:
-    #     specific_how_to(s)
-    #     print('\n')
-
-    # s = 'Add chicken, coat with the marinade, squeeze out excess air, and seal the bag. Marinate in the refrigerator for at least 2 hours.'
-
-    # tokens = nltk.pos_tag(nltk.word_tokenize(s.lower()))
-    # for t in tokens:
-    #     print(stemmer.stem(t[0]))
-    # if t in METHODS or stemmer.stem(t) in METHODS:
-    # print(nltk.pos_tag(nltk.word_tokenize('how do i cook eggs')))
-    # print(nltk.pos_tag(nltk.word_tokenize('how do i preheat an oven')))
-    # VB, VBP, NN, NNS
