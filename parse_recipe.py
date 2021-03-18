@@ -1,19 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 from unicodedata import numeric
-from big_lists import TOOLS, PRIMARY_METHODS, OTHER_METHODS
+# from big_lists import TOOLS, PRIMARY_METHODS, OTHER_METHODS
 import re
 import nltk
 import string
 import json
 import numpy as np
-from pprint import pprint
+# from pprint import pprint
 
 # NOTE: add to these if find something that needs added!
 measurements = ['teaspoon', 'tablespoon', 'cup', 'quart', 'ounce', 'gallon', 'pint', 'pound', 'dash', 'pinch', 'small',
                 'large', 'clove', 'cloves']
 containers = ['package', 'carton', 'container', 'jug', 'box']
-
 
 def num(n):
     '''
@@ -27,6 +26,27 @@ def num(n):
             return float(n)
         except:
             return 0
+
+def get_html(url):
+    '''
+    Input: string url to an AllRecipes.com recipe page
+    Output: BeautifulSoup-parsed document
+    '''
+    r = requests.get(url)
+    return BeautifulSoup(r.text, 'html.parser')
+
+def get_recipe(url):
+    '''
+    Input: string url to an AllRecipes.com recipe page
+    Output: dict containing ingredients and directions
+    '''
+    soup = get_html(url)
+    j = json.loads(soup.find('script', type='application/ld+json').string)[1]
+    return {'name': j['name'], 
+            'ingredients': j['recipeIngredient'],
+            'parsed_ingredients': parse_ingredients(j['recipeIngredient']),
+            'directions': [i['text'].strip('\n') for i in j['recipeInstructions']],
+            'servings': sum([num(x) for x in j['recipeYield']])}
 
 
 def desc_plus_ingredient(ing):
@@ -192,28 +212,6 @@ def get_methods(dirs):
     other = list(flatten([[m for m in OTHER_METHODS if m in d.lower() and m not in primary] for d in dirs]))
     return {'primary': list(np.unique(primary)), 'secondary': list(np.unique(other))}
 
-
-def get_html(url):
-    '''
-    Input: string url to an AllRecipes.com recipe page
-    Output: BeautifulSoup-parsed document
-    '''
-    r = requests.get(url)
-    return BeautifulSoup(r.text, 'html.parser')
-
-
-def get_recipe(url):
-    '''
-    Input: string url to an AllRecipes.com recipe page
-    Output: dict containing ingredients and directions
-    '''
-    soup = get_html(url)
-    j = json.loads(soup.find('script', type='application/ld+json').string)[1]
-    return {'name': j['name'], 
-            'ingredients': j['recipeIngredient'],
-            'parsed_ingredients': parse_ingredients(j['recipeIngredient']),
-            'directions': [i['text'].strip('\n') for i in j['recipeInstructions']],
-            'servings': sum([num(x) for x in j['recipeYield']])}
 
 # ## Example:
 ## Get base recipe (uncomment one)

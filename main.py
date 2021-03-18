@@ -40,7 +40,7 @@ def parse_input(ip):
     worded_steps = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4,
                     'fifth': 5, 'sixth': 6, 'seventh': 7, 'eight': 8, 'ninth': 9, 'tenth': 10}
 
-    if 'www.allrecipes.com/recipe/' in ip:
+    if type(ip) is not tuple and 'www.allrecipes.com/recipe/' in ip:
         recipe = get_recipe(ip)
         print(f'\n\n{recipe["name"]}? Sounds tasty! What do you want to do?')
         num_steps = len(recipe['directions'])
@@ -63,8 +63,14 @@ def parse_input(ip):
         # print(f'curr_step_hows: {curr_step_hows}')
         for key, val in curr_step_hows.items():
             s += f'[{key}]: {val} '
-        ip = input(f'\n\nWhich part? '+s+'\n\n> ')
-        return ('answer_how_to_vague', ip)
+        if len(list(curr_step_hows.keys())) == 1:
+            return ('answer_how_to_vague', '1')
+        elif len(list(curr_step_hows.keys())) > 1:
+            ip = input(f'\n\nWhich part? '+s+'\nIf none of these are what you want, try asking a specific question.\n\n> ')
+            return ('answer_how_to_vague', ip)
+        else: 
+            ip = input('\n\nI don\'t detect any how-tos here. Try asking a specific how-to.\n\n> ')
+            return ip
     elif type(ip) is tuple and ip[0] == 'answer_how_to_vague' and ip[1] != 0:
         ans = curr_step_hows[int(ip[1])]
         print(
@@ -73,7 +79,7 @@ def parse_input(ip):
         return ip
     elif type(ip) is tuple and ip[0] == 'answer_how_to_specific':
         print(
-            f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ip[1])}\n\n')
+            f'\n\nTry this: https://www.google.com/search?q=how+to+{re.sub(" ","+",ip[1].strip(" ?"))}\n\n')
         ip = input('> ')
         return ip
     elif re.search(r'(?i)\bhow\b', ip.lower()):
@@ -97,7 +103,7 @@ def parse_input(ip):
             return 'step out of range'
     elif any(num(x) for x in re.sub(r'(?i)st|rd|th|nd', '', ip).split()) and 'step' in ip.lower():
         cs = int(
-            num(next(x for x in re.sub(r'(?i)st|rd|th', '', ip).split() if num(x))))
+            num(next(x for x in re.sub(r'(?i)st|rd|th|nd', '', ip).split() if num(x))))
         if cs > 0 and cs <= num_steps:
             curr_step = cs - 1
             # print(f'curr_step: {curr_step}')
@@ -153,8 +159,9 @@ def vague_how_to(ip):
     global curr_step_hows
     # super hacky lol
     imperatives = [
-        x+'.' for x in re.split(r'[.;]', recipe['directions'][curr_step].lower())]
-    possible = [sub[0].strip(', ') for sub in
+        x+'.' for x in re.split('[.;]|(?='+')|(?='.join(METHODS)+')', recipe['directions'][curr_step].lower())]
+    print(f'imperatives: {imperatives}')
+    possible = [sub[0].strip(',') for sub in
                 [[x[x.find(t):x.find(next((x for x in x[x.find(t)+len(t):].split() if x in METHODS), '###'))]
                   for t in x.split()
                   if t in METHODS]
