@@ -4,6 +4,12 @@ Github Repo: https://github.com/nthntmmrmn/CS337-Project3
 
 Team members: Nathan Timmerman, Nicholas Kao, Esther Whang, Batuhan Ergor
 
+Python version: 3.6
+Dependencies:
+    - requests
+    - bs4
+    - nltk
+
 How to install dependencies:
     - install virtualenv 
 	pip install virtualenv
