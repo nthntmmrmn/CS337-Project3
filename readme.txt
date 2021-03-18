@@ -4,6 +4,19 @@ Github Repo: https://github.com/nthntmmrmn/CS337-Project3
 
 Team members: Nathan Timmerman, Nicholas Kao, Esther Whang, Batuhan Ergor
 
+How to install dependencies:
+    - install virtualenv 
+	pip install virtualenv
+    - create a new environment
+	python3.6 -m venv virtualenv
+    - activate your virtual environment
+	source virtualenv/bin/activate
+    - install dependencies
+	pip install -r requirements.txt
+
+How to use:
+    - Run `main.py`
+
 Basic goals and how we met them:
 
 1. Recipe retrieval and display (see example above, including "Show me the ingredients list");
